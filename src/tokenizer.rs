@@ -1,4 +1,5 @@
 use std::iter::Peekable;
+
 pub enum Token {
     Start(String),
     End,

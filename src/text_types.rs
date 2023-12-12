@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::fs::File;
 use std::io::{self, prelude::*};
 
@@ -68,7 +69,10 @@ pub fn convert_text_types(path: &str) -> io::Result<Vec<Line>> {
             Token::End => {
                 text_types.extend(current_text_type.clone().to_lines());
             }
-            Token::Whitespace(c) => current_text_type.text += &c.to_string(),
+            Token::Whitespace(c) => current_text_type
+                .text
+                .write_char(c)
+                .expect("This is infallable"),
         }
     }
     Ok(text_types)
