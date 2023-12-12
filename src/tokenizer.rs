@@ -39,7 +39,6 @@ pub fn consume_to_special_char(chars: &mut Peekable<impl Iterator<Item = char>>)
             }
             _ => {
                 return_string.push(chars.next()?);
-                return_string.push('\0');
             }
         }
     }
