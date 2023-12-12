@@ -8,12 +8,12 @@ use crate::tokenizer::{tokenize_string, Token};
 
 #[derive(Clone)]
 pub struct TextType {
-    style: Style,
+    style: String,
     text: String,
 }
 
 impl TextType {
-    pub fn new(style: Style, text: String) -> TextType {
+    pub fn new(style: String, text: String) -> TextType {
         TextType { style, text }
     }
 
@@ -21,23 +21,20 @@ impl TextType {
         let split_lines = self.text.split('\n');
         let mut return_lines = vec![];
         for line in split_lines {
-            return_lines.push(Line::styled(line.to_string(), self.style));
+            return_lines.push(Line::styled(
+                line.to_string(),
+                Self::return_style(Style::default(), &self.style).unwrap(),
+            ));
         }
 
         return_lines
     }
 
-    pub fn from_modifier(default_style: Style, modifier: &str) -> io::Result<TextType> {
+    fn return_style(default_style: Style, modifier: &str) -> io::Result<Style> {
         return match modifier {
-            "title" => Ok(TextType::new(
-                default_style.add_modifier(Modifier::ITALIC),
-                String::new(),
-            )),
-            "warning" => Ok(TextType::new(
-                default_style.fg(Color::White).bg(Color::Rgb(255, 100, 0)),
-                String::new(),
-            )),
-            "normal" => Ok(TextType::new(default_style, String::new())),
+            "title" => Ok(default_style.add_modifier(Modifier::ITALIC)),
+            "warning" => Ok(default_style.fg(Color::White).bg(Color::Rgb(255, 100, 0))),
+            "normal" => Ok(default_style),
             _ => Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!("Unsupported Text modifier {}", modifier),
@@ -53,25 +50,25 @@ pub fn convert_text_types(path: &str) -> io::Result<Vec<Line>> {
     let mut file_string = String::new();
     file.read_to_string(&mut file_string)?;
 
-    let mut tokens = tokenize_string(file_string).into_iter();
+    let tokens = tokenize_string(file_string);
 
     let mut current_text_type: TextType = TextType {
-        style: Style::default(),
+        style: String::new(),
         text: String::new(),
     };
 
-    while let Some(token) = tokens.next() {
+    for token in tokens {
         match token {
             Token::Start(text_type) => {
-                current_text_type = TextType::from_modifier(Style::default(), &text_type)?;
+                current_text_type.style = text_type;
             }
             Token::Text(text) => {
                 current_text_type.text = text;
             }
-
             Token::End => {
                 text_types.extend(current_text_type.clone().to_lines());
             }
+            Token::Whitespace(c) => current_text_type.text += &c.to_string(),
         }
     }
     Ok(text_types)
