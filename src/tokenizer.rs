@@ -3,6 +3,7 @@ pub enum Token {
     Start(String),
     End,
     Text(String),
+    Whitespace(char),
 }
 
 pub fn tokenize_string(string: String) -> Vec<Token> {
@@ -17,45 +18,31 @@ pub fn tokenize_string(string: String) -> Vec<Token> {
 }
 
 pub fn next_token(chars: &mut Peekable<impl Iterator<Item = char>>) -> Option<Token> {
-    return Some(match chars.peek()? {
+    return match chars.peek()? {
         '!' => {
             chars.next();
-            Token::Start(consume_to_whitespace(chars)?)
+            Some(Token::Start(consume_to_char(chars, vec![' ', '\n'])?))
         }
         '$' => {
             chars.next();
-            Token::End
+            Some(Token::End)
         }
-        _ => Token::Text(consume_to_special_char(chars)?),
-    });
+        '\n' | ' ' => Some(Token::Whitespace(chars.next()?)),
+        _ => Some(Token::Text(consume_to_char(chars, vec!['$'])?)),
+    };
 }
 
-pub fn consume_to_special_char(chars: &mut Peekable<impl Iterator<Item = char>>) -> Option<String> {
+fn consume_to_char(
+    chars: &mut Peekable<impl Iterator<Item = char>>,
+    consume_to: Vec<char>,
+) -> Option<String> {
     let mut return_string = String::new();
     while let Some(char) = chars.peek() {
-        match char {
-            '!' | '$' => {
-                break;
-            }
-            _ => {
-                return_string.push(chars.next()?);
-            }
+        if consume_to.contains(char) {
+            break;
         }
-    }
 
-    Some(return_string)
-}
-
-pub fn consume_to_whitespace(chars: &mut Peekable<impl Iterator<Item = char>>) -> Option<String> {
-    let mut return_string = String::new();
-    while let Some(char) = chars.peek() {
-        match char {
-            ' ' => break,
-            '\n' => {
-                break;
-            }
-            _ => return_string.push(chars.next()?),
-        }
+        return_string.push(chars.next()?);
     }
     Some(return_string)
 }
