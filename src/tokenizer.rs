@@ -22,20 +22,20 @@ pub fn next_token(chars: &mut Peekable<impl Iterator<Item = char>>) -> Option<To
     return match chars.peek()? {
         '!' => {
             chars.next();
-            Some(Token::Start(consume_to_char(chars, vec![' ', '\n'])?))
+            Some(Token::Start(consume_to_char(chars, &[' ', '\n'])?))
         }
         '$' => {
             chars.next();
             Some(Token::End)
         }
         '\n' | ' ' => Some(Token::Whitespace(chars.next()?)),
-        _ => Some(Token::Text(consume_to_char(chars, vec!['$'])?)),
+        _ => Some(Token::Text(consume_to_char(chars, &['$'])?)),
     };
 }
 
 fn consume_to_char(
     chars: &mut Peekable<impl Iterator<Item = char>>,
-    consume_to: Vec<char>,
+    consume_to: &[char],
 ) -> Option<String> {
     let mut return_string = String::new();
     while let Some(char) = chars.peek() {
