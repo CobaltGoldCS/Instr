@@ -12,8 +12,9 @@ use std::{
 };
 
 use ratatui::{
-    prelude::{CrosstermBackend, Terminal},
-    widgets::{Paragraph, Wrap},
+    prelude::{CrosstermBackend, Rect, Terminal},
+    style::{Modifier, Style, Styled},
+    widgets::{block::Position, Block, Borders, Paragraph, Wrap},
     Frame,
 };
 
@@ -84,9 +85,21 @@ fn run(widget: Paragraph) -> Result<(), io::Error> {
 }
 
 fn display_frame(app: &mut App, frame: &mut Frame, widgets: Vec<Paragraph>) {
+    let block = Block::new()
+        .title("Instructions (q to quit, j to move down, k to move up)")
+        .title_style(Style::new().add_modifier(Modifier::SLOW_BLINK))
+        .borders(Borders::ALL)
+        .title_position(Position::Top);
+
+    let widget_size = Rect::new(
+        frame.size().x,
+        frame.size().y,
+        frame.size().width,
+        frame.size().height / widgets.len() as u16,
+    );
+
     for widget in widgets {
-        let size = frame.size();
-        frame.render_widget(widget.scroll(app.scroll), size);
+        frame.render_widget(widget.block(block.clone()).scroll(app.scroll), widget_size);
     }
 }
 
