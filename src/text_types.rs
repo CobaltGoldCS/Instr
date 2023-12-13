@@ -1,11 +1,9 @@
-use std::fmt::Write;
-use std::fs::File;
-use std::io::{self, prelude::*};
+use std::io;
 
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Line;
 
-use crate::tokenizer::{tokenize_string, Token};
+use crate::tokenizer::Token;
 
 #[derive(Clone)]
 pub struct TextType {
@@ -14,8 +12,11 @@ pub struct TextType {
 }
 
 impl TextType {
-    pub fn new(style: String, text: String) -> TextType {
-        TextType { style, text }
+    pub fn new<T: Into<String>>(style: T, text: T) -> TextType {
+        TextType {
+            style: style.into(),
+            text: text.into(),
+        }
     }
 
     pub fn to_lines<'a>(self) -> Vec<Line<'a>> {
@@ -44,14 +45,11 @@ impl TextType {
     }
 }
 
-pub fn convert_text_types(path: &str) -> io::Result<Vec<Line>> {
+pub fn from_tokens<T>(tokens: &mut T) -> io::Result<Vec<Line>>
+where
+    T: Iterator<Item = Token>,
+{
     let mut text_types: Vec<Line> = vec![];
-    let mut file = File::open(path).expect(&format!("{} does not exist", path));
-
-    let mut file_string = String::new();
-    file.read_to_string(&mut file_string)?;
-
-    let tokens = tokenize_string(file_string);
 
     let mut current_text_type: TextType = TextType {
         style: String::new(),
@@ -69,10 +67,7 @@ pub fn convert_text_types(path: &str) -> io::Result<Vec<Line>> {
             Token::End => {
                 text_types.extend(current_text_type.clone().to_lines());
             }
-            Token::Whitespace(c) => current_text_type
-                .text
-                .write_char(c)
-                .expect("This is infallable"),
+            Token::Whitespace(_) => (),
         }
     }
     Ok(text_types)
