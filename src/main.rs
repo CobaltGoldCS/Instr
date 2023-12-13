@@ -13,7 +13,7 @@ use std::{
 
 use ratatui::{
     prelude::{CrosstermBackend, Rect, Terminal},
-    style::{Modifier, Style, Styled},
+    style::{Modifier, Style},
     widgets::{block::Position, Block, Borders, Paragraph, Wrap},
     Frame,
 };
