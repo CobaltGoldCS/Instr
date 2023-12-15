@@ -12,9 +12,10 @@ use std::{
 };
 
 use ratatui::{
-    prelude::{CrosstermBackend, Rect, Terminal},
-    style::{Modifier, Style},
-    widgets::{block::Position, Block, Borders, Paragraph, Wrap},
+    prelude::{Constraint, CrosstermBackend, Layout, Terminal},
+    style::{Color, Modifier, Style},
+    symbols::line::THICK,
+    widgets::{block::Position, Block, Borders, LineGauge, Paragraph, Wrap},
     Frame,
 };
 
@@ -49,8 +50,15 @@ fn main() -> Result<(), io::Error> {
     let mut tokens = tokenize_string(file_string).into_iter();
 
     let text_types = text_types::from_tokens(&mut tokens)?;
+
+    let app = App {
+        scroll: (0, 0),
+        total_lines: text_types.len() as u16,
+        should_quit: false,
+    };
+
     let paragraph = Paragraph::new(text_types).wrap(Wrap { trim: true });
-    let run = run(paragraph);
+    let run = run(app, paragraph);
 
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen, DisableMouseCapture)?;
@@ -60,20 +68,15 @@ fn main() -> Result<(), io::Error> {
     return Ok(());
 }
 
-fn run(widget: Paragraph) -> Result<(), io::Error> {
+fn run(mut app: App, widget: Paragraph) -> Result<(), io::Error> {
     let backend = CrosstermBackend::new(io::stdout());
     let mut terminal = Terminal::new(backend)?;
-
-    let mut app = App {
-        scroll: (0, 0),
-        should_quit: false,
-    };
 
     loop {
         let widget = widget.clone().scroll(app.scroll);
 
         terminal.draw(|f| {
-            display_frame(&mut app, f, vec![widget]);
+            display_frame(&mut app, f, widget);
         })?;
         update(&mut app)?;
 
@@ -84,23 +87,29 @@ fn run(widget: Paragraph) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn display_frame(app: &mut App, frame: &mut Frame, widgets: Vec<Paragraph>) {
+fn display_frame(app: &mut App, frame: &mut Frame, widget: Paragraph) {
     let block = Block::new()
         .title("Instructions (q to quit, j to move down, k to move up)")
         .title_style(Style::new().add_modifier(Modifier::SLOW_BLINK))
         .borders(Borders::ALL)
         .title_position(Position::Top);
 
-    let widget_size = Rect::new(
-        frame.size().x,
-        frame.size().y,
-        frame.size().width,
-        frame.size().height / widgets.len() as u16,
-    );
+    let layout = Layout::default()
+        .constraints(vec![Constraint::Percentage(90), Constraint::Percentage(10)])
+        .split(frame.size());
 
-    for widget in widgets {
-        frame.render_widget(widget.block(block.clone()).scroll(app.scroll), widget_size);
-    }
+    // Calculate the progress of the instructions as the (current scroll + height) / total lines
+    let ratio = ((app.scroll.0 as f64 + layout[0].height as f64 - 1.0) / (app.total_lines as f64))
+        .clamp(0.0, 1.0);
+
+    let progress_bar = LineGauge::default()
+        .block(Block::default().borders(Borders::TOP).title("Progress"))
+        .line_set(THICK)
+        .gauge_style(Style::default().fg(Color::White).bg(Color::Black))
+        .ratio(ratio);
+
+    frame.render_widget(widget.block(block.clone()).scroll(app.scroll), layout[0]);
+    frame.render_widget(progress_bar, layout[1]);
 }
 
 fn update(app: &mut App) -> Result<(), io::Error> {
@@ -110,13 +119,12 @@ fn update(app: &mut App) -> Result<(), io::Error> {
     if let Key(key) = event::read()? {
         if key.kind == event::KeyEventKind::Press {
             match key.code {
-                Char('j') => app.scroll.0 = app.scroll.0 + 1,
+                Char('j') => {
+                    app.scroll.0 = (app.scroll.0 + 1).clamp(0, app.total_lines);
+                }
                 Char('k') => {
-                    let mut y = app.scroll.0.wrapping_sub(1);
-                    if y == u16::MAX {
-                        y = 0;
-                    }
-                    app.scroll.0 = y;
+                    app.scroll.0 =
+                        (app.scroll.0 as i32 - 1).clamp(0, app.total_lines as i32) as u16;
                 }
                 Char('q') => app.should_quit = true,
                 _ => {}
