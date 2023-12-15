@@ -26,6 +26,13 @@ pub mod tokenizer;
 use tokenizer::tokenize_string;
 
 fn main() -> Result<(), io::Error> {
+    let args: Vec<_> = env::args().collect();
+    let path: &str = if args.len() > 1 {
+        &args[1]
+    } else {
+        "instructions.inst"
+    };
+
     // setup terminal
     enable_raw_mode()?;
 
@@ -35,12 +42,6 @@ fn main() -> Result<(), io::Error> {
         EnableMouseCapture,
         cursor::MoveTo(0, 0)
     )?;
-    let args: Vec<_> = env::args().collect();
-    let path: &str = if args.len() > 1 {
-        &args[1]
-    } else {
-        "instructions.inst"
-    };
 
     let mut file = File::open(path).expect(&format!("{} does not exist", path));
 
@@ -76,7 +77,7 @@ fn run(mut app: App, widget: Paragraph) -> Result<(), io::Error> {
         let widget = widget.clone().scroll(app.scroll);
 
         terminal.draw(|f| {
-            display_frame(&mut app, f, widget);
+            display_instruction_frame(&mut app, f, widget);
         })?;
         update(&mut app)?;
 
@@ -87,7 +88,7 @@ fn run(mut app: App, widget: Paragraph) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn display_frame(app: &mut App, frame: &mut Frame, widget: Paragraph) {
+fn display_instruction_frame(app: &mut App, frame: &mut Frame, widget: Paragraph) {
     let block = Block::new()
         .title("Instructions (q to quit, j to move down, k to move up)")
         .title_style(Style::new().add_modifier(Modifier::SLOW_BLINK))
@@ -95,17 +96,22 @@ fn display_frame(app: &mut App, frame: &mut Frame, widget: Paragraph) {
         .title_position(Position::Top);
 
     let layout = Layout::default()
-        .constraints(vec![Constraint::Percentage(90), Constraint::Percentage(10)])
+        .constraints(vec![Constraint::Percentage(95), Constraint::Percentage(5)])
         .split(frame.size());
 
     // Calculate the progress of the instructions as the (current scroll + height) / total lines
     let ratio = ((app.scroll.0 as f64 + layout[0].height as f64 - 1.0) / (app.total_lines as f64))
         .clamp(0.0, 1.0);
 
+    let line_style = if ratio == 1.0 {
+        Style::default().fg(Color::LightGreen).bg(Color::Black)
+    } else {
+        Style::default().fg(Color::White).bg(Color::Black)
+    };
+
     let progress_bar = LineGauge::default()
-        .block(Block::default().borders(Borders::TOP).title("Progress"))
         .line_set(THICK)
-        .gauge_style(Style::default().fg(Color::White).bg(Color::Black))
+        .gauge_style(line_style)
         .ratio(ratio);
 
     frame.render_widget(widget.block(block.clone()).scroll(app.scroll), layout[0]);
