@@ -5,7 +5,7 @@ use ratatui::text::Line;
 
 use crate::tokenizer::Token;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextType {
     style: String,
     text: String,
@@ -33,7 +33,7 @@ impl TextType {
     }
 
     fn return_style(default_style: Style, modifier: &str) -> io::Result<Style> {
-        return match modifier {
+        match modifier {
             "title" => Ok(default_style.add_modifier(Modifier::BOLD | Modifier::SLOW_BLINK)),
             "warning" => Ok(default_style.fg(Color::White).bg(Color::Rgb(255, 100, 0))),
             "blinking" => Ok(default_style.add_modifier(Modifier::RAPID_BLINK)),
@@ -44,7 +44,7 @@ impl TextType {
                 io::ErrorKind::InvalidData,
                 format!("Unsupported Text modifier {}", modifier),
             )),
-        };
+        }
     }
 }
 
@@ -74,4 +74,22 @@ where
         }
     }
     Ok(text_types)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::text_types::TextType;
+
+    use super::{from_tokens, Token};
+
+    #[test]
+    fn from_tokens_handles_proper_tokens() {
+        let tokens = vec![Token::Start("title".to_string()), Token::Text("test".to_string()), Token::End];
+        let mut binding = tokens.into_iter();
+        let line_types = from_tokens(&mut binding);
+
+        assert_eq!(line_types.expect("Valid Line Type"), TextType::new("title".to_string(), "test".to_string()).to_lines())
+
+    }
+
 }
