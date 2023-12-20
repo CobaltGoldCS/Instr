@@ -22,6 +22,7 @@ impl TextType {
     pub fn to_lines<'a>(self) -> Vec<Line<'a>> {
         let split_lines = self.text.split('\n');
         let mut return_lines = vec![];
+
         for line in split_lines {
             return_lines.push(Line::styled(
                 line.to_string(),
@@ -69,6 +70,7 @@ where
             }
             Token::End => {
                 text_types.extend(current_text_type.clone().to_lines());
+
             }
             Token::Whitespace(_) => (),
         }
