@@ -126,4 +126,31 @@ mod tests {
             tokens
         );
     }
+
+    #[test]
+    fn tokenizer_handles_carriage_return() {
+        let input = "!normal \r\n this is a test$ \r\n".to_owned();
+
+        let tokens = tokenize_string(input);
+
+        for token in &tokens {
+            match token {
+                Token::Start(value) => assert_eq!("normal", value),
+                Token::Text(text) => assert_eq!("this is a test", text),
+                _ => (),
+            }
+        }
+
+        let whitespace_tokens = tokens.iter().skip(1).take(4);
+
+        for token in whitespace_tokens {
+            if let Token::Whitespace(c) = token {
+                if c == &'\r' {
+                    return;
+                }
+            }
+        }
+        assert!(false, "There should be a carriage return character present in the whitespcae characters");
+         
+    }
 }
