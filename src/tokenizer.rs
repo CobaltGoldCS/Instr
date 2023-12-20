@@ -23,13 +23,13 @@ pub fn next_token(chars: &mut Peekable<impl Iterator<Item = char>>) -> Option<To
     return match chars.peek()? {
         '!' => {
             chars.next();
-            Some(Token::Start(consume_to_char(chars, &[' ', '\n'])?))
+            Some(Token::Start(consume_to_char(chars, &[' ', '\n', '\r'])?))
         }
         '$' => {
             chars.next();
             Some(Token::End)
         }
-        '\n' | ' ' => Some(Token::Whitespace(chars.next()?)),
+        '\r' | '\n' | ' ' => Some(Token::Whitespace(chars.next()?)),
         _ => Some(Token::Text(consume_to_char(chars, &['$'])?)),
     };
 }
