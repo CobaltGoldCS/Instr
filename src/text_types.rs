@@ -6,27 +6,27 @@ use ratatui::text::Line;
 use crate::tokenizer::Token;
 
 #[derive(Clone, Debug)]
-pub struct TextType {
-    style: String,
-    text: String,
+pub struct TextType<'a> {
+    style: &'a str,
+    text: &'a str,
 }
 
-impl TextType {
-    pub fn new<T: Into<String>>(style: T, text: T) -> TextType {
+impl<'a> TextType<'a> {
+    pub fn new(style: &'a str, text: &'a str) -> TextType<'a> {
         TextType {
-            style: style.into(),
-            text: text.into(),
+            style: style,
+            text: text,
         }
     }
 
-    pub fn to_lines<'a>(self) -> Vec<Line<'a>> {
+    pub fn to_lines(self) -> Vec<Line<'a>> {
         let split_lines = self.text.split('\n');
         let mut return_lines = vec![];
 
         for line in split_lines {
             return_lines.push(Line::styled(
                 line.to_string(),
-                Self::return_style(Style::default(), &self.style).unwrap(),
+                Self::return_style(Style::default(), self.style).unwrap(),
             ));
         }
 
@@ -49,15 +49,15 @@ impl TextType {
     }
 }
 
-pub fn from_tokens<T>(tokens: &mut T) -> io::Result<Vec<Line>>
+pub fn from_tokens<'a, T>(default_string: &'a str, tokens: &mut T) -> io::Result<Vec<Line<'a>>>
 where
-    T: Iterator<Item = Token>,
+    T: Iterator<Item = Token<'a>>,
 {
     let mut text_types: Vec<Line> = vec![];
 
     let mut current_text_type: TextType = TextType {
-        style: String::new(),
-        text: String::new(),
+        style: default_string,
+        text: default_string,
     };
 
     for token in tokens {
@@ -70,9 +70,11 @@ where
             }
             Token::End => {
                 text_types.extend(current_text_type.clone().to_lines());
-
             }
-            Token::Whitespace(_) => (),
+            Token::Whitespace(character) =>  match character {
+                "\r\n" | "\n" => text_types.push(Line::from(character)),
+                _ => (),
+            }
         }
     }
     Ok(text_types)
@@ -86,11 +88,11 @@ mod tests {
 
     #[test]
     fn from_tokens_handles_proper_tokens() {
-        let tokens = vec![Token::Start("title".to_string()), Token::Text("test".to_string()), Token::End];
+        let tokens = vec![Token::Start("title"), Token::Text("test"), Token::End];
         let mut binding = tokens.into_iter();
-        let line_types = from_tokens(&mut binding);
+        let line_types = from_tokens("", &mut binding);
 
-        assert_eq!(line_types.expect("Valid Line Type"), TextType::new("title".to_string(), "test".to_string()).to_lines())
+        assert_eq!(line_types.expect("Valid Line Type"), TextType::new("title", "test").to_lines())
 
     }
 
