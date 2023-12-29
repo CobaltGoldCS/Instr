@@ -1,13 +1,10 @@
-!title 
-How to use Inst 
-$
+!title How to use Inst $
 
 !normal Inst has a very simple syntax
 
 Use ! to denote the start of a text type, such as !normal
 
-End the text type with a dollar sign 
-$
+End the text type with a dollar sign $
 !warning Each text type has to be ended with the dollar sign before a new one can be used 
 $
 !normal List of supported text types...
@@ -16,22 +13,14 @@ $
 - !title -> Italicized text
 - !hidden -> Hidden text
 - !blinking -> Blinking text
-- !crossed-out -> Crossed out text
+- !crossed-out -> Crossed out text$
 
-$
 !title Navigation $
-!normal
-Navigate with j (to go down) and k (to go up)
-Use q to quit
-$
+!normal Navigate with j (to go down) and k (to go up)
+Use q to quit$
 
 !crossed-out Maybe if I feel like making more updates I will add on to this. $
-
-
-!normal
-
-
-Super long whitespace
+!normal Super long whitespace
 
 
 
@@ -39,6 +28,4 @@ Super long whitespace
 
 
 
-$
-
-!blinking ~~~~~~~~~~~~~~~~~ END OF TUTORIAL (press q to quit) ~~~~~~~~~~~~~~~~~ $
+$!blinking ~~~~~~~~~~~~~~~~~ END OF TUTORIAL (press q to quit) ~~~~~~~~~~~~~~~~~ $
