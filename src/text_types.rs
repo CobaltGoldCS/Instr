@@ -14,8 +14,8 @@ pub struct TextType<'a> {
 impl<'a> TextType<'a> {
     pub fn new(style: &'a str, text: &'a str) -> TextType<'a> {
         TextType {
-            style: style,
-            text: text,
+            style,
+            text,
         }
     }
 
@@ -25,7 +25,7 @@ impl<'a> TextType<'a> {
 
         for line in split_lines {
             return_lines.push(Line::styled(
-                line.to_string(),
+                line,
                 Self::return_style(Style::default(), self.style).unwrap(),
             ));
         }
