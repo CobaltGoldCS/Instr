@@ -37,20 +37,20 @@ fn main() -> Result<(), io::Error> {
     enable_raw_mode()?;
 
     execute!(
-        io::stdout(),
-        EnterAlternateScreen,
-        EnableMouseCapture,
-        cursor::MoveTo(0, 0)
-    )?;
+      io::stdout(),
+      EnterAlternateScreen,
+      EnableMouseCapture,
+      cursor::MoveTo(0, 0)
+     )?;
 
     let mut file = File::open(path).expect(&format!("{} does not exist", path));
 
     let mut file_string = String::new();
     file.read_to_string(&mut file_string)?;
 
-    let mut tokens = tokenize_string(file_string).into_iter();
+    let mut tokens = tokenize_string(&file_string).into_iter();
 
-    let text_types = text_types::from_tokens(&mut tokens)?;
+    let text_types = text_types::from_tokens(&file_string[..1], &mut tokens)?;
 
     let app = App {
         scroll: (0, 0),
