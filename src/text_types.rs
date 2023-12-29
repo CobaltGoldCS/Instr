@@ -72,7 +72,7 @@ where
                 text_types.extend(current_text_type.clone().to_lines());
             }
             Token::Whitespace(character) =>  match character {
-                "\r\n" | "\n" => text_types.push(Line::from(character)),
+                "\r\n" | "\n" => text_types.push(Line::from("\n")),
                 _ => (),
             }
         }
