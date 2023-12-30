@@ -103,7 +103,7 @@ fn display_instruction_frame(app: &mut App, frame: &mut Frame, widget: Paragraph
     let ratio = ((app.scroll.0 as f64 + layout[0].height as f64 - 1.0) / (app.total_lines as f64))
         .clamp(0.0, 1.0);
 
-    let line_style = if ratio == 1.0 {
+    let line_style = if ratio >= 1.0 {
         Style::default().fg(Color::LightGreen).bg(Color::Black)
     } else {
         Style::default().fg(Color::White).bg(Color::Black)
@@ -130,7 +130,7 @@ fn update(app: &mut App) -> Result<(), io::Error> {
                 }
                 Char('k') => {
                     app.scroll.0 =
-                        (app.scroll.0 as i32 - 1).clamp(0, app.total_lines as i32) as u16;
+                        (app.scroll.0 as isize - 1).clamp(0, app.total_lines as i32) as u16;
                 }
                 Char('q') => app.should_quit = true,
                 _ => {}
