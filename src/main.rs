@@ -66,7 +66,7 @@ fn main() -> Result<(), io::Error> {
 
     run?;
 
-    return Ok(());
+    Ok(())
 }
 
 fn run(mut app: App, widget: Paragraph) -> Result<(), io::Error> {
@@ -130,7 +130,7 @@ fn update(app: &mut App) -> Result<(), io::Error> {
                 }
                 Char('k') => {
                     app.scroll.0 =
-                        (app.scroll.0 as isize - 1).clamp(0, app.total_lines as i32) as u16;
+                        (app.scroll.0 as isize - 1).clamp(0, app.total_lines as isize) as u16;
                 }
                 Char('q') => app.should_quit = true,
                 _ => {}
