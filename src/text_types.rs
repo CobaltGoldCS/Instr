@@ -23,10 +23,11 @@ impl<'a> TextType<'a> {
         let split_lines = self.text.split('\n');
         let mut return_lines = vec![];
 
+        let default_style = Style::default();
         for line in split_lines {
             return_lines.push(Line::styled(
                 line,
-                Self::return_style(Style::default(), self.style).unwrap(),
+                Self::return_style(default_style, self.style).unwrap(),
             ));
         }
 
