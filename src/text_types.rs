@@ -13,10 +13,7 @@ pub struct TextType<'a> {
 
 impl<'a> TextType<'a> {
     pub fn new(style: &'a str, text: &'a str) -> TextType<'a> {
-        TextType {
-            style,
-            text,
-        }
+        TextType { style, text }
     }
 
     pub fn to_lines(self) -> Vec<Line<'a>> {
@@ -36,7 +33,8 @@ impl<'a> TextType<'a> {
 
     fn return_style(default_style: Style, modifier: &str) -> io::Result<Style> {
         match modifier {
-            "title" => Ok(default_style.add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::SLOW_BLINK)),
+            "title" => Ok(default_style
+                .add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::SLOW_BLINK)),
             "warning" => Ok(default_style.fg(Color::White).bg(Color::Rgb(255, 100, 0))),
             "blinking" => Ok(default_style.add_modifier(Modifier::RAPID_BLINK)),
             "crossed-out" => Ok(default_style.add_modifier(Modifier::CROSSED_OUT)),
@@ -72,10 +70,10 @@ where
             Token::End => {
                 text_types.extend(current_text_type.clone().to_lines());
             }
-            Token::Whitespace(character) =>  match character {
+            Token::Whitespace(character) => match character {
                 "\r\n" | "\n" => text_types.push(Line::from("\n")),
                 _ => (),
-            }
+            },
         }
     }
     Ok(text_types)
@@ -93,8 +91,9 @@ mod tests {
         let mut binding = tokens.into_iter();
         let line_types = from_tokens("", &mut binding);
 
-        assert_eq!(line_types.expect("Valid Line Type"), TextType::new("title", "test").to_lines())
-
+        assert_eq!(
+            line_types.expect("Valid Line Type"),
+            TextType::new("title", "test").to_lines()
+        )
     }
-
 }
