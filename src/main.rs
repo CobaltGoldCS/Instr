@@ -23,7 +23,7 @@ pub mod app;
 pub mod text_types;
 pub mod tokenizer;
 
-use tokenizer::tokenize_string;
+use tokenizer::{tokenize_string, StringViewer};
 
 fn main() -> Result<(), io::Error> {
     let args: Vec<_> = env::args().collect();
@@ -37,20 +37,21 @@ fn main() -> Result<(), io::Error> {
     enable_raw_mode()?;
 
     execute!(
-      io::stdout(),
-      EnterAlternateScreen,
-      EnableMouseCapture,
-      cursor::MoveTo(0, 0)
-     )?;
+        io::stdout(),
+        EnterAlternateScreen,
+        EnableMouseCapture,
+        cursor::MoveTo(0, 0)
+    )?;
 
     let mut file = File::open(path).expect(&format!("{} does not exist", path));
 
     let mut file_string = String::new();
     file.read_to_string(&mut file_string)?;
 
-    let mut tokens = tokenize_string(&file_string).into_iter();
+    let string_viewer = StringViewer::new(&file_string);
 
-    let text_types = text_types::from_tokens(&file_string[..1], &mut tokens)?;
+    let mut tokens = tokenize_string(string_viewer).output_values;
+    let text_types = text_types::from_tokens(&file_string[..1], &mut tokens.into_iter())?;
 
     let app = App {
         scroll: (0, 0),
