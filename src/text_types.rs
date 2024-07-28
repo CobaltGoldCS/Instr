@@ -35,7 +35,7 @@ impl<'a> TextType<'a> {
         match modifier {
             "title" => Ok(default_style
                 .add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::SLOW_BLINK)),
-            "warning" => Ok(default_style.fg(Color::White).bg(Color::Rgb(255, 100, 0))),
+            "warning" => Ok(default_style.bg(Color::Rgb(255, 100, 0))),
             "blinking" => Ok(default_style.add_modifier(Modifier::RAPID_BLINK)),
             "crossed-out" => Ok(default_style.add_modifier(Modifier::CROSSED_OUT)),
             "hidden" => Ok(default_style.add_modifier(Modifier::HIDDEN)),

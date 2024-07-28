@@ -45,13 +45,12 @@ fn main() -> Result<(), io::Error> {
 
     let mut file = File::open(path).expect(&format!("{} does not exist", path));
 
-    let mut file_string = String::new();
-    file.read_to_string(&mut file_string)?;
+    let mut file_contents = String::new();
+    file.read_to_string(&mut file_contents)?;
+    let string_viewer = StringViewer::new(&file_contents);
 
-    let string_viewer = StringViewer::new(&file_string);
-
-    let mut tokens = tokenize_string(string_viewer).output_values;
-    let text_types = text_types::from_tokens(&file_string[..1], &mut tokens.into_iter())?;
+    let tokens = tokenize_string(string_viewer).output_values;
+    let text_types = text_types::from_tokens(&file_contents[..1], &mut tokens.into_iter())?;
 
     let app = App {
         scroll: (0, 0),
@@ -75,10 +74,8 @@ fn run(mut app: App, widget: Paragraph) -> Result<(), io::Error> {
     let mut terminal = Terminal::new(backend)?;
 
     loop {
-        let widget = widget.clone().scroll(app.scroll);
-
         terminal.draw(|f| {
-            display_instruction_frame(&mut app, f, widget);
+            display_instruction_frame(&mut app, f, &widget);
         })?;
         update(&mut app)?;
 
@@ -89,7 +86,7 @@ fn run(mut app: App, widget: Paragraph) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn display_instruction_frame(app: &mut App, frame: &mut Frame, widget: Paragraph) {
+fn display_instruction_frame(app: &mut App, frame: &mut Frame, widget: &Paragraph) {
     let block = Block::new()
         .title("Instructions (q to quit, j to move down, k to move up)")
         .title_style(Style::new().add_modifier(Modifier::SLOW_BLINK))
@@ -104,7 +101,7 @@ fn display_instruction_frame(app: &mut App, frame: &mut Frame, widget: Paragraph
     let ratio = ((app.scroll.0 as f64 + layout[0].height as f64 - 1.0) / (app.total_lines as f64))
         .clamp(0.0, 1.0);
 
-    let line_style = if ratio >= 1.0 {
+    let line_style = if ratio == 1.0 {
         Style::default().fg(Color::LightGreen).bg(Color::Black)
     } else {
         Style::default().fg(Color::White).bg(Color::Black)
@@ -115,7 +112,9 @@ fn display_instruction_frame(app: &mut App, frame: &mut Frame, widget: Paragraph
         .gauge_style(line_style)
         .ratio(ratio);
 
-    frame.render_widget(widget.block(block.clone()).scroll(app.scroll), layout[0]);
+    let full_widget = widget.clone().block(block).scroll(app.scroll);
+
+    frame.render_widget(full_widget, layout[0]);
     frame.render_widget(progress_bar, layout[1]);
 }
 
