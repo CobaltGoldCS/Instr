@@ -24,7 +24,7 @@ pub enum DisplayAttributes<'a> {
     Alignment(Alignment),
 }
 
-pub(crate) struct StringViewer<'a> {
+pub struct StringViewer<'a> {
     iter: Peekable<Graphemes<'a>>,
     string: &'a str,
     index: usize,
