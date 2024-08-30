@@ -1,3 +1,7 @@
+pub mod app;
+pub mod text_types;
+pub mod tokenizer;
+
 use app::App;
 use crossterm::{
     cursor,
@@ -18,10 +22,6 @@ use ratatui::{
     widgets::{block::Position, Block, Borders, LineGauge, Paragraph, Wrap},
     Frame,
 };
-
-pub mod app;
-pub mod text_types;
-pub mod tokenizer;
 
 use tokenizer::{tokenize_string, StringViewer};
 
