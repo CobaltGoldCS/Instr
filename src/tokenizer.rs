@@ -145,9 +145,6 @@ fn next_token<'a>(chars: &mut StringViewer<'a>) -> Option<Token<'a>> {
 }
 
 mod tokenizing_helpers {
-    use std::iter::Peekable;
-    use unicode_segmentation::{Graphemes, UnicodeSegmentation};
-
     use super::StringViewer;
 
     pub(super) fn consume_to_char(
