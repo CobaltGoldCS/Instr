@@ -14,7 +14,6 @@ use std::{
     fs::File,
     io::{self, Read},
 };
-
 use ratatui::{
     prelude::{Constraint, CrosstermBackend, Layout, Terminal},
     style::{Color, Modifier, Style},
