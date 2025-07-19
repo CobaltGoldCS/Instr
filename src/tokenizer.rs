@@ -1,5 +1,4 @@
 use std::iter::Peekable;
-
 use ratatui::layout::Alignment;
 use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
@@ -182,7 +181,9 @@ mod tokenizing_helpers {
 
 #[cfg(test)]
 mod tests {
-    use super::{tokenize_string, Token};
+    use crate::tokenizer::TokenStream;
+
+    use super::Token;
 
     #[test]
     fn tokenizer_recognizes_whitespace() {
@@ -196,11 +197,11 @@ mod tests {
                 Token::Whitespace(" "),
                 Token::Whitespace("\r\n"),
             ],
-            tokens,
+            tokens.stream,
             "Tokens should be properly handled"
         );
 
-        match tokens[0] {
+        match tokens.stream[0] {
             Token::Whitespace(char) => assert_eq!(
                 char, " ",
                 "First token should properly hold correct whitespace character."
@@ -208,7 +209,7 @@ mod tests {
             _ => assert!(false, "Incorrect type"),
         }
 
-        match tokens[1] {
+        match tokens.stream[1] {
             Token::Whitespace(char) => assert_eq!(
                 char, "\n",
                 "First token should properly hold correct whitespace character."
@@ -216,7 +217,7 @@ mod tests {
             _ => assert!(false, "Incorrect type"),
         }
 
-        match tokens[2] {
+        match tokens.stream[2] {
             Token::Whitespace(char) => assert_eq!(
                 char, " ",
                 "First token should properly hold correct whitespace character."
@@ -224,7 +225,7 @@ mod tests {
             _ => assert!(false, "Incorrect type"),
         }
 
-        match tokens[3] {
+        match tokens.stream[3] {
             Token::Whitespace(char) => assert_eq!(
                 char, "\r\n",
                 "This token should hold a windows style return"
@@ -238,7 +239,7 @@ mod tests {
         let input = "!normal This is a test$";
         let tokens = tokenize_string(input);
 
-        for token in &tokens {
+        for token in &tokens.stream {
             match token {
                 Token::Start(value) => assert_eq!(&"normal", value),
                 Token::Text(text) => assert_eq!(&"This is a test", text),
